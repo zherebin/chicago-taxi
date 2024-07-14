@@ -1,0 +1,140 @@
+version: 2
+
+sources:
+  - name: staging
+    database: vertical-orbit-426819-f8
+    schema: trips_data
+
+    tables:
+      - name: taxi_data_external
+        description: Raw data about taxi trips in Chicago. Source 
+
+models:
+  - name: stg__trips_data
+    description: Trips made by taxi in Chicago from 2022-01-01 till 2023-12-31
+    columns:
+      - name: trip_id
+        data_type: string
+        description: A unique identifier for the trip.
+        tests:
+          - unique
+          - not_null
+
+      - name: taxi_id
+        data_type: string
+        description: A unique identifier for the taxi.
+        tests:
+          - not_null
+
+      - name: pickup_community_area_id
+        data_type: int64
+        description: The Community Area ID where the trip began. This column will be equal 0 for locations outside Chicago.
+        tests:
+          - relationships:
+              to: ref('dim_community_areas')
+              field: community_area_id
+          - not_null
+
+      - name: dropoff_community_area_id
+        data_type: int64
+        description: The Community Area ID where the trip ended. This column will be equal 0 for locations outside Chicago.
+        tests:
+          - relationships:
+              to: ref('dim_community_areas')
+              field: community_area_id
+          - not_null
+
+      - name: pickup_year
+        data_type: integer
+        tests:
+          - not_null
+
+      - name: pickup_month
+        data_type: integer
+        tests:
+          - not_null
+
+      - name: pickup_datetime
+        data_type: timestamp
+        description: When the trip started, rounded to the nearest 15 minutes.
+        tests:
+          - not_null
+
+      - name: dropoff_datetime
+        data_type: timestamp
+        description: When the trip ended, rounded to the nearest 15 minutes.
+        tests:
+          - not_null
+
+      - name: trip_seconds
+        data_type: int64
+        description: Time of the trip in seconds.
+        tests:
+          - not_null
+
+      - name: trip_miles
+        data_type: numeric
+        description: Distance of the trip in miles.
+        tests:
+          - not_null
+
+      - name: company_name
+        data_type: string
+        description: The taxi company.
+        tests:
+          - not_null
+
+      - name: fare_amount
+        data_type: numeric
+        description: The fare for the trip.
+        tests:
+          - not_null
+
+      - name: tips_amount
+        data_type: numeric
+        description: The tip for the trip. Cash tips generally will not be recorded.
+
+      - name: tolls_amount
+        data_type: numeric
+        description: The tolls for the trip.
+
+      - name: extras_amount
+        data_type: numeric
+        description: Extra charges for the trip.
+
+      - name: total_amount
+        data_type: numeric
+        description: Total cost of the trip, the total of the previous columns.
+        tests:
+          - not_null
+
+      - name: payment_type
+        data_type: string
+        description: Type of payment for the trip - Credit Card, Cash, Unknown, Dispute, Mobile, Prepaid, Prcard, No Charge
+        tests:
+          - accepted_values:
+              values: ['Cash', 'Credit Card', 'Dispute', 'Mobile', 'No Charge', 'Prcard', 'Prepaid', 'Unknown']
+
+      - name: pickup_latitude
+        data_type: numeric
+        description: >
+          The latitude of the center of the pickup census tract or the community area if the census tract has been hidden for privacy. 
+          This column often will be blank for locations outside Chicago.
+
+      - name: pickup_longitude
+        data_type: numeric
+        description: >
+          The longitude of the center of the pickup census tract or the community area if the census tract has been hidden for privacy. 
+          This column often will be blank for locations outside Chicago.
+
+      - name: dropoff_latitude
+        data_type: numeric
+        description: >
+          The latitude of the center of the dropoff census tract or the community area if the census tract has been hidden for privacy. 
+          This column often will be blank for locations outside Chicago.
+
+      - name: dropoff_longitude
+        data_type: numeric
+        description: >
+          The longitude of the center of the dropoff census tract or the community area if the census tract has been hidden for privacy. 
+          This column often will be blank for locations outside Chicago.
